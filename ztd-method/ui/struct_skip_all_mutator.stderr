@@ -1,0 +1,8 @@
+error[E0599]: no method named `first_mut` found for struct `StructSkipAllMutator` in the current scope
+  --> ui/struct_skip_all_mutator.rs:21:14
+   |
+7  | struct StructSkipAllMutator {
+   | --------------------------- method `first_mut` not found for this struct
+...
+21 |     instance.first_mut();
+   |              ^^^^^^^^^ method not found in `StructSkipAllMutator`

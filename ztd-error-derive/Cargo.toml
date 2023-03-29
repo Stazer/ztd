@@ -1,0 +1,10 @@
+[package]
+name = "ztd-error-derive"
+version = "0.0.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+ztd-error-macro = { path = "../ztd-error-macro" }

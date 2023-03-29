@@ -1,0 +1,22 @@
+[workspace]
+members = [
+    "ztd",
+    "ztd-constructor",
+    "ztd-constructor-derive",
+    "ztd-constructor-macro",
+    "ztd-coverage",
+    "ztd-display",
+    "ztd-display-derive",
+    "ztd-display-macro",
+    "ztd-error-derive",
+    "ztd-error-macro",
+    "ztd-from",
+    "ztd-from-derive",
+    "ztd-from-macro",
+    "ztd-method",
+    "ztd-method-derive",
+    "ztd-method-macro",
+    "ztd-record",
+    "ztd-record-derive",
+    "ztd-record-macro",
+]

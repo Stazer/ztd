@@ -1,0 +1,12 @@
+[package]
+name = "ztd-record"
+version = "0.0.0"
+edition = "2021"
+
+[dev-dependencies]
+quote = "1"
+trybuild = "1"
+ztd-record-macro = { path = "../ztd-record-macro" }
+
+[dependencies]
+ztd-record-derive = { path = "../ztd-record-derive" }

@@ -1,0 +1,12 @@
+[package]
+name = "ztd-method"
+version = "0.0.0"
+edition = "2021"
+
+[dev-dependencies]
+quote = "1"
+trybuild = "1"
+ztd-method-macro = { path = "../ztd-method-macro" }
+
+[dependencies]
+ztd-method-derive = { path = "../ztd-method-derive" }

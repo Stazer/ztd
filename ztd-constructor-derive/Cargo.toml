@@ -1,0 +1,10 @@
+[package]
+name = "ztd-constructor-derive"
+version = "0.0.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+ztd-constructor-macro = { path = "../ztd-constructor-macro" }

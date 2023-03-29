@@ -1,0 +1,10 @@
+[package]
+name = "ztd-error-macro"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+proc-macro2 = "1"
+quote = "1"
+syn = { version = "2", features = ["full", "extra-traits", "printing"] }
+ztd-coverage = { path = "../ztd-coverage" }

@@ -1,0 +1,8 @@
+error[E0599]: no method named `set_first` found for struct `StructSkipSetter` in the current scope
+  --> ui/struct_skip_setter.rs:21:14
+   |
+7  | struct StructSkipSetter {
+   | ----------------------- method `set_first` not found for this struct
+...
+21 |     instance.set_first(String::from("foobar"));
+   |              ^^^^^^^^^ method not found in `StructSkipSetter`

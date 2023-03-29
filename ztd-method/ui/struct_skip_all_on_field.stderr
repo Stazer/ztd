@@ -1,0 +1,25 @@
+error[E0425]: cannot find value `instace` in this scope
+  --> ui/struct_skip_all_on_field.rs:19:5
+   |
+19 |     instace.set_first(String::from("bar"));
+   |     ^^^^^^^ help: a local variable with a similar name exists: `instance`
+
+error[E0599]: no method named `first_mut` found for struct `StructSkipAllOnField` in the current scope
+  --> ui/struct_skip_all_on_field.rs:20:15
+   |
+7  | struct StructSkipAllOnField {
+   | --------------------------- method `first_mut` not found for this struct
+...
+20 |     *instance.first_mut() = String::from("bar");
+   |               ^^^^^^^^^ method not found in `StructSkipAllOnField`
+
+error[E0599]: no method named `first` found for struct `StructSkipAllOnField` in the current scope
+  --> ui/struct_skip_all_on_field.rs:21:14
+   |
+7  | struct StructSkipAllOnField {
+   | --------------------------- method `first` not found for this struct
+...
+21 |     instance.first();
+   |              ^^^^^-- help: remove the arguments
+   |              |
+   |              field, not a method

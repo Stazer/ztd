@@ -1,0 +1,12 @@
+[package]
+name = "ztd"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+ztd-constructor = { path = "../ztd-constructor" }
+ztd-display = { path = "../ztd-display" }
+ztd-error = { path = "../ztd-error" }
+ztd-from = { path = "../ztd-from" }
+ztd-method = { path = "../ztd-method" }
+ztd-record = { path = "../ztd-record" }
