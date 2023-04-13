@@ -4,7 +4,6 @@ use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 use syn::token::{And, Mut};
 use syn::{parse2, Index, ItemStruct, Type, TypeReference};
-use ztd_coverage::assume_full_coverage;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -34,10 +33,10 @@ fn is_copy(r#type: &Type) -> bool {
         _ => return false,
     };
 
-    let ident = assume_full_coverage!(match path.path.get_ident() {
+    let ident = match path.path.get_ident() {
         Some(ident) => ident,
-        None => unreachable!(),
-    });
+        None => return false,
+    };
 
     matches!(
         ident.to_string().as_str(),

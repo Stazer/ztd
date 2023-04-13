@@ -405,6 +405,23 @@ fn accessor_return_copy() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[test]
+fn type_path_without_ident() {
+    #[derive(Method)]
+    #[Method(all)]
+    struct Struct {
+        first: Vec<u8>,
+    }
+
+    let instance = Struct {
+        first: vec!(0, 1),
+    };
+
+    assert!(instance.first == &[0, 1])
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[test]
 fn ui_struct_skip_accessor() {
     Macro::handle(quote!(
         #[derive(Method)]
