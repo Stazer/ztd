@@ -5,8 +5,26 @@
 
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
-use syn::{parse2, Fields, Index, Item, ItemEnum, ItemStruct, LitStr, Variant};
+use syn::{parse2, Fields, Index, Generics, Ident, Item, ItemEnum, ItemStruct, LitStr, Variant};
 use ztd_coverage::assume_full_coverage;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+fn write_display_impl(
+    generics: &Generics,
+    name: &Ident,
+    r#impl: TokenStream,
+) -> TokenStream {
+    let (impl_generics, type_generics, where_clause) = generics.split_for_impl();
+
+    quote!(
+        impl #impl_generics ::std::fmt::Display for #name #type_generics #where_clause {
+            fn fmt(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                #r#impl
+            }
+        }
+    )
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -46,8 +64,6 @@ impl<'a> EnumData<'a> {
     }
 
     fn write(self) -> TokenStream {
-        let struct_name = &self.ast.ident;
-        let (impl_generics, type_generics, where_clause) = self.ast.generics.split_for_impl();
         let variants = self
             .ast
             .variants
@@ -55,14 +71,14 @@ impl<'a> EnumData<'a> {
             .enumerate()
             .map(|(variant_index, variant)| self.write_variant(variant, variant_index));
 
-        quote!(
-            impl #impl_generics ::std::fmt::Display for #struct_name #type_generics #where_clause {
-                fn fmt(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-                    match self {
-                        #(#variants),*
-                    }
+        write_display_impl(
+            &self.ast.generics,
+            &self.ast.ident,
+            quote!(
+                match self {
+                    #(#variants),*
                 }
-            }
+            )
         )
     }
 
@@ -273,14 +289,10 @@ impl<'a> StructData<'a> {
             },
         };
 
-        let (impl_generics, type_generics, where_clause) = self.ast.generics.split_for_impl();
-
-        quote!(
-            impl #impl_generics ::std::fmt::Display for #struct_name #type_generics #where_clause {
-                fn fmt(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-                    #r#impl
-                }
-            }
+        write_display_impl(
+            &self.ast.generics,
+            &self.ast.ident,
+            r#impl,
         )
     }
 }
