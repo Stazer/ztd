@@ -289,3 +289,14 @@ fn unit_struct_with_message() {
 
     assert!(format!("{}", Struct) == "foobar");
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[test]
+fn struct_with_closure() {
+    #[derive(Display)]
+    //#[Display(|first| format!("Hello {}", first))]
+    struct Struct {
+        first: String,
+    }
+}

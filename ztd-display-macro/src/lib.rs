@@ -3,9 +3,9 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-use proc_macro2::{Span, TokenStream};
+use proc_macro2::{TokenStream};
 use quote::{format_ident, quote};
-use syn::{parse2, Fields, Index, Generics, Ident, Item, ItemEnum, ItemStruct, LitStr, Variant};
+use syn::{parse2, Fields, FieldsUnnamed, FieldsNamed, Generics, Ident, Item, ItemEnum, ItemStruct, LitStr, Variant};
 use ztd_coverage::assume_full_coverage;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -24,6 +24,120 @@ fn write_display_impl(
             }
         }
     )
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+fn write_display_named_fields<T>(
+    name: &Ident,
+    fields: &FieldsNamed,
+    message: &Option<LitStr>,
+    r#impl: T,
+) -> TokenStream
+where
+    T: FnOnce(TokenStream) -> TokenStream,
+{
+    match &message {
+        Some(message) => {
+            r#impl(
+                quote!(
+                    write!(formatter, #message)
+                )
+            )
+        }
+        None => {
+            let assignments = fields.named.iter().map(|field| {
+                let ident = &field.ident;
+
+                quote!(
+                    .field(stringify!(#ident), &#ident)
+                )
+            });
+
+            r#impl(
+                quote!(
+                    formatter
+                        .debug_struct(stringify!(#name))
+                        #(#assignments)*
+                    .finish()
+                )
+            )
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+fn write_display_unnamed_fields<T>(
+    name: &Ident,
+    fields: &FieldsUnnamed,
+    message: &Option<LitStr>,
+    r#impl: T,
+) -> TokenStream
+where
+    T: FnOnce(TokenStream) -> TokenStream,
+{
+    let field_idents = if fields.unnamed.len() == 1 {
+        let ident = format_ident!("value");
+
+        quote!(#ident)
+    } else {
+        let fields = fields
+            .unnamed
+            .iter()
+            .enumerate()
+            .map(|(index, _field)| format_ident!("value{}", index));
+
+        quote!(#(#fields),*)
+    };
+
+    match message {
+        Some(message) => {
+            r#impl(
+                quote!(
+                    (#field_idents) => write!(formatter, #message)
+                )
+            )
+        }
+        None => {
+            let assignments = if fields.unnamed.len() == 1 {
+                let ident = format_ident!("value");
+
+                quote!(.field(#ident))
+            } else {
+                let fields =
+                    fields.unnamed.iter().enumerate().map(|(index, _field)| {
+                        let field_ident = format_ident!("value{}", index);
+
+                        quote!(.field(#field_ident))
+                    });
+
+                quote!(#(#fields)*)
+            };
+
+            r#impl(
+                quote!(
+                    (#field_idents) =>
+                        formatter
+                        .debug_tuple(stringify!(#name))
+                        #assignments
+                    .finish()
+                )
+            )
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+fn write_display_unit_fields(
+    name: &Ident,
+    message: &Option<LitStr>,
+) -> TokenStream {
+    match message {
+        Some(message) => quote!(write!(formatter, #message)),
+        None => quote!(formatter.debug_struct(stringify!(#name)).finish()),
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -92,97 +206,35 @@ impl<'a> EnumData<'a> {
 
         match &variant.fields {
             Fields::Named(fields) => {
-                let field_idents = fields.named.iter().map(|field| {
-                    assume_full_coverage!(match field.ident.as_ref() {
-                        Some(field_ident) => field_ident,
-                        None => unreachable!(),
-                    })
-                });
+                let field_idents = fields.named.iter().map(|field| &field.ident);
 
-                match &variant_data.message {
-                    Some(message) => {
-                        quote!(
-                            #[allow(unused_variables)]
-                            Self::#variant_ident { #(#field_idents),* } => write!(formatter, #message),
-                        )
-                    }
-                    None => {
-                        let assignments = fields.named.iter().map(|field| {
-                            let ident = assume_full_coverage!(match field.ident.as_ref() {
-                                Some(field_ident) => field_ident,
-                                None => unreachable!(),
-                            });
-
-                            quote!(
-                                .field(stringify!(#ident), &#ident)
-                            )
-                        });
-
-                        quote!(
-                            Self::#variant_ident { #(#field_idents),* } => formatter
-                                .debug_struct(stringify!(#variant_ident))
-                                #(#assignments)*
-                                .finish()
-                        )
-                    }
-                }
+                write_display_named_fields(
+                    &variant.ident,
+                    fields,
+                    &variant_data.message,
+                    |tokens| quote!(
+                        Self::#variant_ident { #(#field_idents),* } => #tokens
+                    )
+                )
             }
             Fields::Unnamed(fields) => {
-                let field_idents = if fields.unnamed.len() == 1 {
-                    let ident = format_ident!("value");
-
-                    quote!(#ident)
-                } else {
-                    let fields = fields
-                        .unnamed
-                        .iter()
-                        .enumerate()
-                        .map(|(index, _field)| format_ident!("value{}", index));
-
-                    quote!(#(#fields),*)
-                };
-
-                match &variant_data.message {
-                    Some(message) => {
-                        quote!(
-                            #[allow(unused_variables)]
-                            Self::#variant_ident(#field_idents) => write!(formatter, #message),
-                        )
-                    }
-                    None => {
-                        let assignments = if fields.unnamed.len() == 1 {
-                            let ident = format_ident!("value");
-
-                            quote!(.field(#ident))
-                        } else {
-                            let fields =
-                                fields.unnamed.iter().enumerate().map(|(index, _field)| {
-                                    let field_ident = format_ident!("value{}", index);
-
-                                    quote!(.field(#field_ident))
-                                });
-
-                            quote!(#(#fields)*)
-                        };
-
-                        quote!(
-                            Self::#variant_ident(#field_idents) =>
-                                formatter
-                                    .debug_tuple(stringify!(#variant_ident))
-                                    #assignments
-                                    .finish()
-                        )
-                    }
-                }
+                write_display_unnamed_fields(
+                    &variant.ident,
+                    fields,
+                    &variant_data.message,
+                    |tokens| quote!(
+                        Self::#variant_ident #tokens
+                    )
+                )
             }
             Fields::Unit => {
-                let message = match &variant_data.message {
-                    Some(message) => message.clone(),
-                    None => LitStr::new(&variant_ident.to_string(), Span::call_site()),
-                };
+                let r#impl = write_display_unit_fields(
+                    &variant.ident,
+                    &variant_data.message,
+                );
 
                 quote!(
-                    Self::#variant_ident => write!(formatter, #message)
+                    Self::#variant_ident => #r#impl
                 )
             }
         }
@@ -212,81 +264,37 @@ impl<'a> StructData<'a> {
     }
 
     fn write(self) -> TokenStream {
-        let struct_name = &self.ast.ident;
-
         let r#impl = match &self.ast.fields {
-            Fields::Named(fields) => match self.message {
-                Some(message) => {
-                    let idents = fields.named.iter().map(|field| &field.ident);
+            Fields::Named(fields) => {
+                let field_idents = fields.named.iter().map(|field| &field.ident);
 
-                    quote!(
+                write_display_named_fields(
+                    &self.ast.ident,
+                    fields,
+                    &self.message,
+                    |tokens| quote!(
                         match self {
-                            Self { #(#idents),* } => write!(formatter, #message)
+                            Self { #(#field_idents),* } => #tokens
                         }
                     )
-                }
-                None => {
-                    let assignments = fields.named.iter().map(|field| {
-                        let ident = &field.ident;
-
-                        quote!(
-                            .field(stringify!(#ident), &self.#ident)
-                        )
-                    });
-
-                    quote!(
-                        formatter
-                            .debug_struct(stringify!(#struct_name))
-                            #(#assignments)*
-                            .finish()
-                    )
-                }
-            },
-            Fields::Unnamed(fields) => match self.message {
-                Some(message) if fields.unnamed.len() == 1 => {
-                    quote!(match self {
-                        Self(value) => write!(formatter, #message),
-                    })
-                }
-                Some(message) => {
-                    let fields = fields
-                        .unnamed
-                        .iter()
-                        .enumerate()
-                        .map(|(field_index, _field)| format_ident!("value{}", field_index));
-
-                    quote!(
+                )
+            }
+            Fields::Unnamed(fields) => {
+                write_display_unnamed_fields(
+                    &self.ast.ident,
+                    fields,
+                    &self.message,
+                    |tokens| quote!(
                         match self {
-                            Self(#(#fields),*) => write!(formatter, #message)
+                            Self #tokens
                         }
                     )
-                }
-                None => {
-                    let assignments =
-                        fields
-                            .unnamed
-                            .iter()
-                            .enumerate()
-                            .map(|(field_index, _field)| {
-                                let index = Index::from(field_index);
-
-                                quote!(
-                                    .field(&self.#index)
-                                )
-                            });
-
-                    quote!(
-                        formatter
-                            .debug_tuple(stringify!(#struct_name))
-                            #(#assignments)*
-                            .finish()
-                    )
-                }
-            },
-            Fields::Unit => match self.message {
-                Some(message) => quote!(write!(formatter, #message)),
-                None => quote!(formatter.debug_struct(stringify!(#struct_name)).finish()),
-            },
+                )
+            }
+            Fields::Unit => write_display_unit_fields(
+                &self.ast.ident,
+                &self.message,
+            ),
         };
 
         write_display_impl(
