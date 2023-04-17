@@ -3,5 +3,9 @@ name = "ztd-display"
 version = "0.0.0"
 edition = "2021"
 
+[dev-dependencies]
+quote = "1"
+ztd-display-macro = { path = "../ztd-display-macro" }
+
 [dependencies]
 ztd-display-derive = { path = "../ztd-display-derive" }

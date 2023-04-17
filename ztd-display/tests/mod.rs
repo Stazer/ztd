@@ -1,4 +1,6 @@
+use quote::quote;
 use ztd_display::Display;
+use ztd_display_macro::Macro;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -293,10 +295,227 @@ fn unit_struct_with_message() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[test]
-fn struct_with_closure() {
+fn enum_named_with_closure() {
     #[derive(Display)]
-    //#[Display(|first| format!("Hello {}", first))]
-    struct Struct {
-        first: String,
+    enum Enum {
+        #[Display(|| format!("Hello {}", first))]
+        Case { first: String },
     }
+
+    assert!(
+        format!(
+            "{}",
+            Enum::Case {
+                first: String::from("foo")
+            }
+        ) == "Hello foo"
+    )
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[test]
+fn enum_named_with_block() {
+    #[derive(Display)]
+    enum Enum {
+        #[Display({
+            format!("Hello {}", first)
+        })]
+        Case { first: String },
+    }
+
+    assert!(
+        format!(
+            "{}",
+            Enum::Case {
+                first: String::from("foo")
+            }
+        ) == "Hello foo"
+    )
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[test]
+fn enum_named_with_function_call() {
+    fn foobar(first: &String) -> String {
+        format!("Hello {first}")
+    }
+
+    #[derive(Display)]
+    enum Enum {
+        #[Display(foobar(first))]
+        Case { first: String },
+    }
+
+    assert!(
+        format!(
+            "{}",
+            Enum::Case {
+                first: String::from("foo")
+            }
+        ) == "Hello foo"
+    )
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[test]
+fn enum_named_with_function() {
+    fn foobar(first: &String) -> String {
+        format!("Hello {first}")
+    }
+
+    #[derive(Display)]
+    enum Enum {
+        #[Display(foobar)]
+        Case { first: String },
+    }
+
+    assert!(
+        format!(
+            "{}",
+            Enum::Case {
+                first: String::from("foo")
+            }
+        ) == "Hello foo"
+    )
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[test]
+fn enum_unnamed_with_closure() {
+    #[derive(Display)]
+    enum Enum {
+        #[Display(|| format!("Hello {}", value))]
+        Case(String),
+    }
+
+    assert!(format!("{}", Enum::Case(String::from("foo"))) == "Hello foo")
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[test]
+fn enum_unnamed_with_block() {
+    #[derive(Display)]
+    enum Enum {
+        #[Display({
+            format!("Hello {}", value)
+        })]
+        Case(String),
+    }
+
+    assert!(format!("{}", Enum::Case(String::from("foo"))) == "Hello foo")
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[test]
+fn enum_unnamed_with_call() {
+    fn foobar(value: &String) -> String {
+        format!("Hello {value}")
+    }
+
+    #[derive(Display)]
+    enum Enum {
+        #[Display(foobar(value))]
+        Case(String),
+    }
+
+    assert!(format!("{}", Enum::Case(String::from("foo"))) == "Hello foo")
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[test]
+fn enum_unnamed_with_path() {
+    fn foobar(value: &String) -> String {
+        format!("Hello {value}")
+    }
+
+    #[derive(Display)]
+    enum Enum {
+        #[Display(foobar)]
+        Case(String),
+    }
+
+    assert!(format!("{}", Enum::Case(String::from("foo"))) == "Hello foo")
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[test]
+fn enum_unit_with_closure() {
+    #[derive(Display)]
+    enum Enum {
+        #[Display(|| format!("Hello foo"))]
+        Case,
+    }
+
+    assert!(format!("{}", Enum::Case) == "Hello foo")
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[test]
+fn enum_unit_with_block() {
+    #[derive(Display)]
+    enum Enum {
+        #[Display({
+            format!("Hello foo")
+        })]
+        Case,
+    }
+
+    assert!(format!("{}", Enum::Case) == "Hello foo")
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[test]
+fn enum_unit_with_call() {
+    fn foobar(value: &str) -> String {
+        format!("Hello {value}")
+    }
+
+    #[derive(Display)]
+    enum Enum {
+        #[Display(foobar("foo"))]
+        Case,
+    }
+
+    assert!(format!("{}", Enum::Case) == "Hello foo")
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[test]
+fn enum_unit_with_path() {
+    fn foobar() -> String {
+        format!("Hello foo")
+    }
+
+    #[derive(Display)]
+    enum Enum {
+        #[Display(foobar)]
+        Case,
+    }
+
+    assert!(format!("{}", Enum::Case) == "Hello foo")
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[test]
+#[should_panic(expected = "Unsupported strategy")]
+fn enum_unit_with_invalid_token() {
+    Macro::handle(quote!(
+        #[derive(Display)]
+        enum Enum {
+            #[Display(return)]
+            Case,
+        }
+    ));
 }
