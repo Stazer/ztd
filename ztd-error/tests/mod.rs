@@ -1,4 +1,6 @@
+use quote::quote;
 use ztd_error::Error;
+use ztd_error_macro::Macro;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -44,4 +46,16 @@ fn r#enum() {
     }
 
     test(Enum::Case)
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[test]
+#[should_panic(expected = "Unsupported item")]
+fn r#union() {
+    Macro::handle(quote!(
+        #[derive(Error)]
+        union Union {
+        }
+    ));
 }

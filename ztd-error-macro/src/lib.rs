@@ -1,12 +1,6 @@
-#![feature(no_coverage)]
-#![feature(stmt_expr_attributes)]
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{parse2, Generics, Ident, Item, ItemEnum, ItemStruct};
-use ztd_coverage::assume_full_coverage;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -59,11 +53,11 @@ enum Data<'a> {
 
 impl<'a> Data<'a> {
     fn read(item: &'a Item) -> Self {
-        assume_full_coverage!(match item {
+        match item {
             Item::Enum(r#enum) => Self::Enum(EnumData::read(r#enum)),
             Item::Struct(r#struct) => Self::Struct(StructData::read(r#struct)),
             _ => panic!("Unsupported item"),
-        })
+        }
     }
 
     fn write(self) -> TokenStream {

@@ -3,5 +3,9 @@ name = "ztd-error"
 version = "0.0.0"
 edition = "2021"
 
+[dev-dependencies]
+quote = "1"
+ztd-error-macro = { path = "../ztd-error-macro" }
+
 [dependencies]
 ztd-error-derive = { path = "../ztd-error-derive" }
