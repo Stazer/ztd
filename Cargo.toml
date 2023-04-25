@@ -4,7 +4,6 @@ members = [
     "ztd-constructor",
     "ztd-constructor-derive",
     "ztd-constructor-macro",
-    "ztd-coverage",
     "ztd-display",
     "ztd-display-derive",
     "ztd-display-macro",
