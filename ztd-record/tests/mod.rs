@@ -114,6 +114,20 @@ fn unit_struct() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[test]
+#[should_panic(expected = "Cannot flatten Type::Tuple { paren_token: Paren, elems: [] }")]
+fn invalid_flatten_on_tuple_type() {
+    Macro::handle(quote!(
+        #[derive(Record)]
+        struct Struct {
+            #[Record(flatten)]
+            _first: (),
+        }
+    ));
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[test]
 fn ui_struct_skip() {
     Macro::handle(quote!(
         #[derive(Record)]

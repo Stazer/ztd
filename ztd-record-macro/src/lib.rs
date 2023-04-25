@@ -1,5 +1,4 @@
-#![feature(no_coverage)]
-#![feature(stmt_expr_attributes)]
+#![cfg_attr(coverage_nightly, feature(no_coverage))]
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -10,8 +9,7 @@ use std::collections::HashSet;
 use std::mem::replace;
 use syn::punctuated::Punctuated;
 use syn::token::Pub;
-use syn::{parse2, Fields, Index, ItemStruct, Type, Visibility};
-use ztd_coverage::assume_full_coverage;
+use syn::{parse2, Fields, Index, ItemStruct, Path, PathSegment, Type, Visibility};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -190,13 +188,20 @@ impl<'a> Data<'a> {
 
             match details.modifier.exclusive {
                 Some(ExclusiveFieldModifier::Flatten) => {
-                    assume_full_coverage!(if let Type::Path(type_path) = &mut field.ty {
-                        if let Some(segment) = type_path.path.segments.last_mut() {
-                            segment.ident = format_ident!("{}Record", segment.ident);
+                    if let Type::Path(type_path) = &mut field.ty {
+                        #[cfg_attr(coverage_nightly, no_coverage)]
+                        fn get_last_segment_mut(path: &mut Path) -> &mut PathSegment {
+                            match path.segments.last_mut() {
+                                Some(last) => last,
+                                None => unreachable!(),
+                            }
                         }
+
+                        let mut segment = get_last_segment_mut(&mut type_path.path);
+                        segment.ident = format_ident!("{}Record", segment.ident);
                     } else {
-                        panic!("Cannot transform {:?}", field.ty)
-                    })
+                        panic!("Cannot flatten {:?}", field.ty)
+                    }
                 }
                 Some(ExclusiveFieldModifier::Skip) => {
                     skipped_fields.insert(field_index);
