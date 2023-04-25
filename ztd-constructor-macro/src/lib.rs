@@ -1,20 +1,53 @@
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
-use syn::{parse2, Field, Fields, ItemStruct};
+use syn::{parse2, Field, Fields, ItemStruct, Visibility};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct Data<'a> {
     ast: &'a ItemStruct,
+    visibility: Option<Visibility>,
 }
 
 impl<'a> Data<'a> {
     fn read(ast: &'a ItemStruct) -> Self {
-        Self { ast }
+        Self {
+            ast,
+            visibility: ast
+                .attrs
+                .iter()
+                .find(|attribute| attribute.path().is_ident("Constructor"))
+                .and_then(|attribute| {
+                    let mut visibility = None;
+
+                    let result = attribute.parse_nested_meta(|meta| {
+                        if meta.path.is_ident("visibility") {
+                            let value = meta.value()?;
+
+                            visibility = Some(value.parse::<Visibility>().unwrap());
+
+                            // Visibility::Inherited catches everything when being parsed
+                            if matches!(visibility, Some(Visibility::Inherited)) {
+                                return Err(meta.error("Unknown visibility"));
+                            }
+
+                            Ok(())
+                        } else {
+                            Err(meta.error("Unknown attribute"))
+                        }
+                    });
+
+                    if let Err(error) = result {
+                        panic!("{}", error)
+                    }
+
+                    visibility
+                }),
+        }
     }
 
     fn write(self) -> TokenStream {
-        let visibility = &self.ast.vis;
+        let visibility = self.visibility.as_ref().or(Some(&self.ast.vis));
 
         let constructor = match self.ast.fields {
             Fields::Named(ref fields) => {

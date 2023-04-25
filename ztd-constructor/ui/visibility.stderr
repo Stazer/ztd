@@ -1,0 +1,8 @@
+error[E0624]: associated function `new` is private
+  --> ui/visibility.rs:20:13
+   |
+6  |     #[derive(Constructor)]
+   |              ----------- private associated function defined here
+...
+20 |     Struct::new(String::default());
+   |             ^^^ private associated function

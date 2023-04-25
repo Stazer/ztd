@@ -3,5 +3,10 @@ name = "ztd-constructor"
 version = "0.0.0"
 edition = "2021"
 
+[dev-dependencies]
+quote = "1"
+trybuild = "1"
+ztd-constructor-macro = { path = "../ztd-constructor-macro" }
+
 [dependencies]
 ztd-constructor-derive = { path = "../ztd-constructor-derive" }

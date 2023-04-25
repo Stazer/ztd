@@ -1,4 +1,7 @@
+use quote::quote;
+use trybuild::TestCases;
 use ztd_constructor::Constructor;
+use ztd_constructor_macro::Macro;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -62,4 +65,88 @@ fn unit_struct() {
     struct UnitStruct;
 
     assert!(matches!(UnitStruct::new(), UnitStruct))
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[test]
+fn visibility() {
+    #[derive(Constructor)]
+    #[Constructor(visibility = pub(crate))]
+    pub struct _Struct {
+        _first: usize,
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[test]
+#[should_panic(expected = "expected `=`")]
+fn visiblity_should_panic_without_value() {
+    Macro::handle(
+        quote!(
+            #[derive(Constructor)]
+            #[Constructor(visibility)]
+            pub struct _Struct {
+                _first: usize,
+            }
+        )
+        .into(),
+    );
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[test]
+#[should_panic(expected = "Unknown visibility")]
+fn visiblity_should_panic_without_visibility_syntax() {
+    Macro::handle(
+        quote!(
+            #[derive(Constructor)]
+            #[Constructor(visibility = foobar)]
+            pub struct _Struct {
+                _first: usize,
+            }
+        )
+        .into(),
+    );
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[test]
+#[should_panic(expected = "Unknown attribute")]
+fn should_panic_with_unknown_attribute() {
+    Macro::handle(
+        quote!(
+            #[derive(Constructor)]
+            #[Constructor(foo = bar)]
+            pub struct _Struct {
+                _first: usize,
+            }
+        )
+        .into(),
+    );
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[test]
+fn ui_visibility() {
+    Macro::handle(quote!(
+        #[derive(Constructor)]
+        #[Constructor(visibility = pub(self))]
+        pub struct Struct {
+            _first: String,
+        }
+    ));
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[test]
+fn ui() {
+    let cases = TestCases::new();
+
+    cases.compile_fail("ui/visibility.rs");
 }
