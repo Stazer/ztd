@@ -519,3 +519,15 @@ fn enum_unit_with_invalid_token() {
         }
     ));
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[test]
+#[should_panic(expected = "Unsupported item")]
+fn r#union() {
+    Macro::handle(quote!(
+        #[derive(Displya)]
+        union Union {
+        }
+    ));
+}
