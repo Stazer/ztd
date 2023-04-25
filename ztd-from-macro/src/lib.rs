@@ -1,5 +1,4 @@
-#![feature(no_coverage)]
-#![feature(stmt_expr_attributes)]
+#![cfg_attr(coverage_nightly, feature(no_coverage))]
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -9,7 +8,6 @@ use syn::{
     parse2, Fields, FieldsNamed, FieldsUnnamed, Generics, Ident, Index, Item, ItemEnum, ItemStruct,
     Meta, Variant,
 };
-use ztd_coverage::assume_full_coverage;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -279,10 +277,18 @@ impl<'a> EnumData<'a> {
     fn write_variant(&self, variant_index: usize, variant: &Variant) -> Option<TokenStream> {
         let variant_ident = &variant.ident;
 
-        let variant_data = assume_full_coverage!(match self.variants.get(variant_index) {
-            Some(variant_data) => variant_data,
-            None => unreachable!(),
-        });
+        #[cfg_attr(coverage_nightly, no_coverage)]
+        fn get_variant_data<'a>(
+            data: &'a EnumData<'a>,
+            variant_index: usize,
+        ) -> &'a EnumVariantData {
+            match data.variants.get(variant_index) {
+                Some(variant_data) => variant_data,
+                None => unreachable!(),
+            }
+        }
+
+        let variant_data = get_variant_data(self, variant_index);
 
         if matches!(
             variant_data.modifier,
@@ -345,11 +351,11 @@ enum Data<'a> {
 
 impl<'a> Data<'a> {
     fn read(item: &'a Item) -> Self {
-        assume_full_coverage!(match item {
+        match item {
             Item::Enum(r#enum) => Self::Enum(EnumData::read(r#enum)),
             Item::Struct(r#struct) => Self::Struct(StructData::read(r#struct)),
             _ => panic!("Unsupported item"),
-        })
+        }
     }
 
     fn write(self) -> TokenStream {

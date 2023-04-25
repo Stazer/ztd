@@ -3,5 +3,9 @@ name = "ztd-from"
 version = "0.0.0"
 edition = "2021"
 
+[dev-dependencies]
+quote = "1"
+ztd-from-macro = { path = "../ztd-from-macro" }
+
 [dependencies]
 ztd-from-derive = { path = "../ztd-from-derive" }

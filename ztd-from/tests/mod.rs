@@ -1,4 +1,6 @@
+use quote::quote;
 use ztd_from::From;
+use ztd_from_macro::Macro;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -344,4 +346,19 @@ fn multiple_enum_variants() {
         _first: String::default(),
         _second: String::default(),
     });
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[test]
+#[should_panic(expected = "Unsupported item")]
+fn union_should_panic() {
+    Macro::handle(
+        quote!(
+            #[derive(From)]
+            union Union {
+            }
+        )
+        .into(),
+    );
 }
