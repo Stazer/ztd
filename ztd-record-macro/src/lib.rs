@@ -197,7 +197,7 @@ impl<'a> Data<'a> {
                             }
                         }
 
-                        let mut segment = get_last_segment_mut(&mut type_path.path);
+                        let segment = get_last_segment_mut(&mut type_path.path);
                         segment.ident = format_ident!("{}Record", segment.ident);
                     } else {
                         panic!("Cannot flatten {:?}", field.ty)
