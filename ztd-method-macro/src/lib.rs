@@ -1,4 +1,4 @@
-#![feature(no_coverage)]
+#![feature(coverage_attribute)]
 #![feature(stmt_expr_attributes)]
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};

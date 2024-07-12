@@ -1,4 +1,4 @@
-#![cfg_attr(coverage_nightly, feature(no_coverage))]
+#![feature(coverage_attribute)]
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -189,7 +189,7 @@ impl<'a> Data<'a> {
             match details.modifier.exclusive {
                 Some(ExclusiveFieldModifier::Flatten) => {
                     if let Type::Path(type_path) = &mut field.ty {
-                        #[cfg_attr(coverage_nightly, no_coverage)]
+                        #[coverage(off)]
                         fn get_last_segment_mut(path: &mut Path) -> &mut PathSegment {
                             match path.segments.last_mut() {
                                 Some(last) => last,

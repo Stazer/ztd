@@ -1,4 +1,4 @@
-#![cfg_attr(coverage_nightly, feature(no_coverage))]
+#![feature(coverage_attribute)]
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -277,7 +277,7 @@ impl<'a> EnumData<'a> {
     fn write_variant(&self, variant_index: usize, variant: &Variant) -> Option<TokenStream> {
         let variant_ident = &variant.ident;
 
-        #[cfg_attr(coverage_nightly, no_coverage)]
+        #[coverage(off)]
         fn get_variant_data<'a>(
             data: &'a EnumData<'a>,
             variant_index: usize,
