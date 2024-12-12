@@ -8,7 +8,7 @@ fn write_error_impl(generics: &Generics, name: &Ident) -> TokenStream {
     let (impl_generics, type_generics, where_clause) = generics.split_for_impl();
 
     quote!(
-        impl #impl_generics ::std::error::Error for #name #type_generics #where_clause {}
+        impl #impl_generics ::core::error::Error for #name #type_generics #where_clause {}
     )
 }
 

@@ -20,7 +20,7 @@ fn write_from_impl(
     let (impl_generics, type_generics, where_clause) = generics.split_for_impl();
 
     quote!(
-        impl #impl_generics ::std::convert::From<#from> for #name #type_generics #where_clause {
+        impl #impl_generics ::core::convert::From<#from> for #name #type_generics #where_clause {
             #r#impl
         }
     )
