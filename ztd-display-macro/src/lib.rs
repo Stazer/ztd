@@ -61,8 +61,8 @@ fn write_display_impl(generics: &Generics, name: &Ident, r#impl: TokenStream) ->
     let (impl_generics, type_generics, where_clause) = generics.split_for_impl();
 
     quote!(
-        impl #impl_generics ::std::fmt::Display for #name #type_generics #where_clause {
-            fn fmt(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        impl #impl_generics ::core::fmt::Display for #name #type_generics #where_clause {
+            fn fmt(&self, formatter: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
                 #r#impl
             }
         }
