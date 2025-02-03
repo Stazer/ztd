@@ -356,7 +356,7 @@ fn accessor_return_reference() {
     #[derive(Method)]
     #[Method(accessors)]
     struct Struct {
-        #[Method(accessor_return_reference)]
+        #[Method(accessor_returns_reference)]
         first: u32,
     }
 
@@ -393,7 +393,7 @@ fn accessor_return_copy() {
     #[derive(Method)]
     #[Method(accessors)]
     struct Struct {
-        #[Method(accessor_return_copy)]
+        #[Method(accessor_returns_copy)]
         first: Tag,
     }
 

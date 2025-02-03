@@ -196,21 +196,21 @@ impl<'a> Data<'a> {
                             field_data.set_accessor(&data, FieldDataModifier::Enabled);
                         }
 
-                        if meta.path.is_ident("accessor_return_automatic") {
+                        if meta.path.is_ident("accessor_returns_automatic") {
                             field_data.set_accessor_return(
                                 &data,
                                 FieldDataAccessorReturnModifier::Automatic,
                             );
                         }
 
-                        if meta.path.is_ident("accessor_return_reference") {
+                        if meta.path.is_ident("accessor_returns_reference") {
                             field_data.set_accessor_return(
                                 &data,
                                 FieldDataAccessorReturnModifier::Reference,
                             );
                         }
 
-                        if meta.path.is_ident("accessor_return_copy") {
+                        if meta.path.is_ident("accessor_returns_copy") {
                             field_data
                                 .set_accessor_return(&data, FieldDataAccessorReturnModifier::Copy);
                         }
