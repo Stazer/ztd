@@ -1,5 +1,5 @@
 [package]
-name = "ztd-record-macro"
+name = "ztd-inner-macro"
 version = "0.0.0"
 edition = "2021"
 

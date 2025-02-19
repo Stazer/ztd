@@ -1,13 +1,13 @@
 use quote::quote;
 use trybuild::TestCases;
-use ztd_record::Record;
-use ztd_record_macro::Macro;
+use ztd_inner::Inner;
+use ztd_inner_macro::Macro;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[test]
 fn r#struct() {
-    #[derive(Record)]
+    #[derive(Inner)]
     struct Struct {
         first: String,
     }
@@ -16,7 +16,7 @@ fn r#struct() {
         (Struct {
             first: String::from("foo"),
         })
-        .into_record()
+        .into_inner()
         .first
             == String::from("foo"),
     )
@@ -26,28 +26,28 @@ fn r#struct() {
 
 #[test]
 fn struct_with_lifetime() {
-    #[derive(Record)]
+    #[derive(Inner)]
     struct StructWithLifetime<'a> {
         first: &'a String,
     }
 
     let first = String::from("foo");
 
-    assert!((StructWithLifetime { first: &first }).into_record().first == &first)
+    assert!((StructWithLifetime { first: &first }).into_inner().first == &first)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[test]
 fn struct_flatten() {
-    #[derive(Record)]
+    #[derive(Inner)]
     struct Struct2 {
         name: &'static str,
     }
 
-    #[derive(Record)]
+    #[derive(Inner)]
     struct Struct {
-        #[Record(flatten)]
+        #[Inner(flatten)]
         child: Struct2,
     }
 
@@ -55,7 +55,7 @@ fn struct_flatten() {
         (Struct {
             child: Struct2 { name: "foo" }
         })
-        .into_record()
+        .into_inner()
         .child
         .name
             == "foo",
@@ -66,15 +66,15 @@ fn struct_flatten() {
 
 #[test]
 fn tuple_struct_flatten() {
-    #[derive(Record)]
+    #[derive(Inner)]
     struct TupleStruct2(&'static str, &'static str);
 
-    #[derive(Record)]
-    struct TupleStruct(#[Record(flatten)] TupleStruct2, &'static str);
+    #[derive(Inner)]
+    struct TupleStruct(#[Inner(flatten)] TupleStruct2, &'static str);
 
     assert!(
         TupleStruct(TupleStruct2("foo", "bar"), "hello")
-            .into_record()
+            .into_inner()
             .0
              .1
             == "bar",
@@ -85,30 +85,30 @@ fn tuple_struct_flatten() {
 
 #[test]
 fn tuple_struct_skip_first() {
-    #[derive(Record)]
-    struct TupleStruct(#[Record(skip)] &'static str, &'static str);
+    #[derive(Inner)]
+    struct TupleStruct(#[Inner(skip)] &'static str, &'static str);
 
-    assert!(TupleStruct("foo", "bar").into_record().0 == "bar");
+    assert!(TupleStruct("foo", "bar").into_inner().0 == "bar");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[test]
 fn tuple_struct_skip_second() {
-    #[derive(Record)]
-    struct TupleStruct(&'static str, #[Record(skip)] &'static str);
+    #[derive(Inner)]
+    struct TupleStruct(&'static str, #[Inner(skip)] &'static str);
 
-    assert!(TupleStruct("foo", "bar").into_record().0 == "foo");
+    assert!(TupleStruct("foo", "bar").into_inner().0 == "foo");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[test]
 fn unit_struct() {
-    #[derive(Record)]
+    #[derive(Inner)]
     struct UnitStruct;
 
-    assert!(matches!(UnitStruct.into_record(), UnitStructRecord))
+    assert!(matches!(UnitStruct.into_inner(), UnitStructInner))
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -117,9 +117,9 @@ fn unit_struct() {
 #[should_panic(expected = "Cannot flatten Type::Tuple { paren_token: Paren, elems: [] }")]
 fn invalid_flatten_on_tuple_type() {
     Macro::handle(quote!(
-        #[derive(Record)]
+        #[derive(Inner)]
         struct Struct {
-            #[Record(flatten)]
+            #[Inner(flatten)]
             _first: (),
         }
     ));
@@ -130,9 +130,9 @@ fn invalid_flatten_on_tuple_type() {
 #[test]
 fn ui_struct_skip() {
     Macro::handle(quote!(
-        #[derive(Record)]
+        #[derive(Inner)]
         struct Struct {
-            #[Record(skip)]
+            #[Inner(skip)]
             field: String,
         }
     ));

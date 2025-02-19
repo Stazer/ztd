@@ -1,10 +1,10 @@
-use ztd_record::Record;
+use ztd_inner::Inner;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#[derive(Record)]
+#[derive(Inner)]
 struct Struct {
-    #[Record(skip)]
+    #[Inner(skip)]
     field: String,
 }
 
@@ -13,5 +13,5 @@ struct Struct {
 fn main() {
     (Struct {
         field: String::from("foo"),
-    }).into_record().field;
+    }).into_inner().field;
 }

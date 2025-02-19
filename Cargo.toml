@@ -15,7 +15,7 @@ members = [
     "ztd-method",
     "ztd-method-derive",
     "ztd-method-macro",
-    "ztd-record",
-    "ztd-record-derive",
-    "ztd-record-macro",
+    "ztd-inner",
+    "ztd-inner-derive",
+    "ztd-inner-macro",
 ]

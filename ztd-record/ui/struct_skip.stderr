@@ -1,5 +1,0 @@
-error[E0609]: no field `field` on type `StructRecord`
-  --> ui/struct_skip.rs:16:22
-   |
-16 |     }).into_record().field;
-   |                      ^^^^^ unknown field

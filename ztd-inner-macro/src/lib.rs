@@ -60,7 +60,7 @@ impl<'a> Data<'a> {
                 .attrs
                 .iter()
                 .enumerate()
-                .find(|(_attribute_index, attribute)| attribute.path().is_ident("Record"))
+                .find(|(_attribute_index, attribute)| attribute.path().is_ident("Inner"))
             {
                 details.attribute_index = Some(attribute_index);
 
@@ -91,7 +91,7 @@ impl<'a> Data<'a> {
         let visibility = self.ast.vis.clone();
         let struct_name = self.ast.ident.clone();
         let (impl_generics, type_generics, where_clause) = self.ast.generics.split_for_impl();
-        let record_struct_name = format_ident!("{}Record", self.ast.ident);
+        let inner_struct_name = format_ident!("{}Inner", self.ast.ident);
 
         let r#impl = match self.ast.fields {
             Fields::Named(ref fields) => {
@@ -107,7 +107,7 @@ impl<'a> Data<'a> {
 
                         match details.modifier.exclusive {
                             Some(ExclusiveFieldModifier::Flatten) => Some(quote!(
-                                #ident: self.#ident.into_record()
+                                #ident: self.#ident.into_inner()
                             )),
                             Some(ExclusiveFieldModifier::Skip) => None,
                             None => Some(quote!(
@@ -118,8 +118,8 @@ impl<'a> Data<'a> {
 
                 quote!(
                     impl #impl_generics #struct_name #type_generics #where_clause {
-                        #visibility fn into_record(self) -> #record_struct_name #type_generics {
-                            #record_struct_name {
+                        #visibility fn into_inner(self) -> #inner_struct_name #type_generics {
+                            #inner_struct_name {
                                 #(#fields),*
                             }
                         }
@@ -141,7 +141,7 @@ impl<'a> Data<'a> {
 
                         match details.modifier.exclusive {
                             Some(ExclusiveFieldModifier::Flatten) => Some(quote!(
-                                self.#index.into_record()
+                                self.#index.into_inner()
                             )),
                             Some(ExclusiveFieldModifier::Skip) => None,
                             None => Some(quote!(
@@ -152,8 +152,8 @@ impl<'a> Data<'a> {
 
                 quote!(
                     impl #impl_generics #struct_name #type_generics #where_clause {
-                        #visibility fn into_record(self) -> #record_struct_name #type_generics {
-                            #record_struct_name(
+                        #visibility fn into_inner(self) -> #inner_struct_name #type_generics {
+                            #inner_struct_name(
                                 #(#fields),*
                             )
                         }
@@ -163,8 +163,8 @@ impl<'a> Data<'a> {
             Fields::Unit => {
                 quote!(
                     impl #impl_generics #struct_name #type_generics #where_clause {
-                        #visibility fn into_record(self) -> #record_struct_name {
-                            #record_struct_name
+                        #visibility fn into_inner(self) -> #inner_struct_name {
+                            #inner_struct_name
                         }
                     }
                 )
@@ -173,7 +173,7 @@ impl<'a> Data<'a> {
 
         let mut ast = self.ast.clone();
 
-        ast.ident = record_struct_name;
+        ast.ident = inner_struct_name;
 
         let mut skipped_fields = HashSet::<usize, RandomState>::default();
 
@@ -198,7 +198,7 @@ impl<'a> Data<'a> {
                         }
 
                         let segment = get_last_segment_mut(&mut type_path.path);
-                        segment.ident = format_ident!("{}Record", segment.ident);
+                        segment.ident = format_ident!("{}Inner", segment.ident);
                     } else {
                         panic!("Cannot flatten {:?}", field.ty)
                     }

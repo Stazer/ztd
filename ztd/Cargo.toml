@@ -9,4 +9,4 @@ ztd-display = { path = "../ztd-display" }
 ztd-error = { path = "../ztd-error" }
 ztd-from = { path = "../ztd-from" }
 ztd-method = { path = "../ztd-method" }
-ztd-record = { path = "../ztd-record" }
+ztd-inner = { path = "../ztd-inner" }

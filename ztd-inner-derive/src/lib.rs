@@ -1,9 +1,9 @@
 use proc_macro::TokenStream;
-use ztd_record_macro::Macro;
+use ztd_inner_macro::Macro;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#[proc_macro_derive(Record, attributes(Record))]
-pub fn derive_record(stream: TokenStream) -> TokenStream {
+#[proc_macro_derive(Inner, attributes(Inner))]
+pub fn derive_inner(stream: TokenStream) -> TokenStream {
     Macro::handle(stream.into()).into()
 }

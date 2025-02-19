@@ -1,0 +1,12 @@
+[package]
+name = "ztd-inner"
+version = "0.0.0"
+edition = "2021"
+
+[dev-dependencies]
+quote = "1"
+trybuild = "1"
+ztd-inner-macro = { path = "../ztd-inner-macro" }
+
+[dependencies]
+ztd-inner-derive = { path = "../ztd-inner-derive" }

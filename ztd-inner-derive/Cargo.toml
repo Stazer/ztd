@@ -1,5 +1,5 @@
 [package]
-name = "ztd-record-derive"
+name = "ztd-inner-derive"
 version = "0.0.0"
 edition = "2021"
 
@@ -7,4 +7,4 @@ edition = "2021"
 proc-macro = true
 
 [dependencies]
-ztd-record-macro = { path = "../ztd-record-macro" }
+ztd-inner-macro = { path = "../ztd-inner-macro" }
