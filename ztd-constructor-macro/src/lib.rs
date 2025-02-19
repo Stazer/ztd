@@ -1,5 +1,6 @@
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
+use std::collections::HashSet;
 use syn::{parse2, Field, Fields, ItemStruct, Visibility};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -7,6 +8,7 @@ use syn::{parse2, Field, Fields, ItemStruct, Visibility};
 struct Data<'a> {
     ast: &'a ItemStruct,
     visibility: Option<Visibility>,
+    default_fields: HashSet<&'a Field>,
 }
 
 impl<'a> Data<'a> {
@@ -43,6 +45,35 @@ impl<'a> Data<'a> {
 
                     visibility
                 }),
+            default_fields: ast
+                .fields
+                .iter()
+                .filter(|field| {
+                    let mut default = false;
+
+                    for attribute in field
+                        .attrs
+                        .iter()
+                        .filter(|attribute| attribute.path().is_ident("Constructor"))
+                    {
+                        let result = attribute.parse_nested_meta(|meta| {
+                            if meta.path.is_ident("default") {
+                                default = true;
+                            } else {
+                                return Err(meta.error("Unknown attribute"));
+                            }
+
+                            Ok(())
+                        });
+
+                        if let Err(error) = result {
+                            panic!("{}", error)
+                        }
+                    }
+
+                    default
+                })
+                .collect(),
         }
     }
 
@@ -51,7 +82,12 @@ impl<'a> Data<'a> {
 
         let constructor = match self.ast.fields {
             Fields::Named(ref fields) => {
-                let arguments = self.write_arguments(fields.named.iter());
+                let arguments = self.write_arguments(
+                    fields
+                        .named
+                        .iter()
+                        .filter(|field| !self.default_fields.contains(field)),
+                );
                 let initializations = self.write_initializations(fields.named.iter());
 
                 quote!(
@@ -63,7 +99,12 @@ impl<'a> Data<'a> {
                 )
             }
             Fields::Unnamed(ref fields) => {
-                let arguments = self.write_arguments(fields.unnamed.iter());
+                let arguments = self.write_arguments(
+                    fields
+                        .unnamed
+                        .iter()
+                        .filter(|field| !self.default_fields.contains(field)),
+                );
                 let initializations = self.write_initializations(fields.unnamed.iter());
 
                 quote!(
@@ -109,20 +150,35 @@ impl<'a> Data<'a> {
         })
     }
 
-    fn write_initializations<'b, T>(&self, iterator: T) -> impl Iterator<Item = TokenStream> + 'b
+    fn write_initializations<T>(&'a self, iterator: T) -> impl Iterator<Item = TokenStream> + 'a
     where
-        T: Iterator<Item = &'b Field> + 'b,
+        T: Iterator<Item = &'a Field> + 'a,
     {
-        iterator.enumerate().map(|(index, field)| {
-            let ident = match &field.ident {
-                Some(ident) => ident.clone(),
-                None => format_ident!("value{}", index),
-            };
+        iterator
+            .filter(|field| !self.default_fields.contains(field))
+            .enumerate()
+            .map(|(index, field)| {
+                let ident = match &field.ident {
+                    Some(ident) => ident.clone(),
+                    None => format_ident!("value{}", index),
+                };
 
-            quote!(
-                #ident
-            )
-        })
+                quote!(
+                    #ident
+                )
+            })
+            .chain(self.default_fields.iter().map(|field| {
+                let field_type = &field.ty;
+
+                match &field.ident {
+                    Some(ident) => quote!(
+                        #ident: <#field_type as ::core::default::Default>::default()
+                    ),
+                    None => quote!(
+                        <#field_type as ::core::default::Default>::default()
+                    ),
+                }
+            }))
     }
 }
 

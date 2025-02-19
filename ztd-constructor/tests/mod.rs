@@ -150,3 +150,16 @@ fn ui() {
 
     cases.compile_fail("ui/visibility.rs");
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[test]
+fn default_named() {
+    #[derive(Constructor)]
+    pub struct Struct {
+        #[Constructor(default)]
+        first: usize,
+    }
+
+    let _ = Struct::new();
+}
