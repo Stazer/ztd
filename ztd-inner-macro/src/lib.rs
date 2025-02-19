@@ -179,6 +179,7 @@ impl<'a> Data<'a> {
 
         for (field_index, field) in ast.fields.iter_mut().enumerate() {
             field.vis = Visibility::Public(Pub::default());
+            field.attrs.clear();
 
             let details = self.fields.get(field_index).unwrap();
 
