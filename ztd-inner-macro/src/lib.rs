@@ -174,6 +174,7 @@ impl<'a> Data<'a> {
         let mut ast = self.ast.clone();
 
         ast.ident = inner_struct_name;
+        ast.attrs.clear();
 
         let mut skipped_fields = HashSet::<usize, RandomState>::default();
 
